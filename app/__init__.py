@@ -1,0 +1,1 @@
+"""Gold monitor app package."""

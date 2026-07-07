@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>金价监控台</title>
+    <link rel="stylesheet" href="/static/styles.css?v=13" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" id="sidebar"></aside>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <header class="topbar">
+          <div class="topbar-left">
+
+            <div class="topbar-title">行情监控</div>
+          </div>
+          <div class="topbar-right">
+            <div class="topbar-status">
+              <span class="pulse"></span>
+              <span id="last-updated">等待数据</span>
+            </div>
+          </div>
+        </header>
+
+        <main class="container">
+<section class="tab-panel" data-tab-panel="dashboard">
+        <section class="dashboard-hero glass">
+          <div class="dashboard-hero-copy">
+            <p class="dashboard-kicker">Dashboard</p>
+            <h2>行情总览与监控中心</h2>
+            
+          </div>
+          <nav class="dashboard-jump-nav" aria-label="看板分区导航">
+            <button type="button" class="dashboard-jump-link" data-dashboard-jump="dashboard-overview">总览</button>
+            <button type="button" class="dashboard-jump-link" data-dashboard-jump="dashboard-monitor">监控</button>
+            <button type="button" class="dashboard-jump-link" data-dashboard-jump="dashboard-charts">图表</button>
+            <button type="button" class="dashboard-jump-link" data-dashboard-jump="dashboard-history">历史</button>
+            <button type="button" class="dashboard-jump-link" data-dashboard-jump="dashboard-ai-linkage">AI联动</button>
+          </nav>
+        </section>
+
+        <section class="dashboard-section" id="dashboard-overview">
+          <div class="dashboard-section-head">
+            <h2>总览</h2>
+            
+          </div>
+          <section class="cards-grid">
+            <article class="card glass" id="card-intl">
+              <h3>国际现货金（伦敦金）</h3>
+              <p class="price" id="price-intl">--</p>
+              <p class="meta" id="meta-intl">--</p>
+              <p class="meta" id="change-intl">较昨收 --</p>
+            </article>
+            <article class="card glass" id="card-domestic">
+              <h3>国内积存金（人民币/克）</h3>
+              <p class="price" id="price-domestic">--</p>
+              <p class="meta" id="meta-domestic">--</p>
+              <p class="meta" id="change-domestic">较昨收 --</p>
+            </article>
+            <article class="card glass" id="card-fx">
+              <h3>美元兑人民币汇率</h3>
+              <p class="price" id="price-fx">--</p>
+              <p class="meta" id="meta-fx">--</p>
+            </article>
+            <article class="card glass" id="card-spread">
+              <h3>内外盘价差（溢价/折价）</h3>
+              <p class="price" id="price-spread">--</p>
+              <p class="meta" id="meta-spread">--</p>
+            </article>
+          </section>
+          <section class="signals-grid">
+            <article class="signal-card glass">
+              <h3>国际现货金趋势信号</h3>
+              <p id="signal-intl-bias" class="signal-bias">--</p>
+              <p id="signal-intl-reason" class="meta">--</p>
+            </article>
+            <article class="signal-card glass">
+              <h3>国内积存金趋势信号</h3>
+              <p id="signal-dom-bias" class="signal-bias">--</p>
+              <p id="signal-dom-reason" class="meta">--</p>
+            </article>
+          </section>
+        </section>
+
+        <section class="dashboard-section" id="dashboard-monitor">
+          <div class="dashboard-section-head">
+            <h2>监控状态与操作</h2>
+            
+          </div>
+          <div class="dashboard-monitor-grid">
+            <section class="controls glass">
+              <div class="control-item">
+                <label for="range-select">历史区间</label>
+                <select id="range-select">
+                  <option value="1m">一个月</option>
+                  <option value="3m">三个月</option>
+                  <option value="6m">六个月</option>
+                  <option value="12m" selected>一年</option>
+                </select>
+              </div>
+              <div class="control-item">
+                <label for="layout-select">K线展示</label>
+                <select id="layout-select">
+                  <option value="split" selected>双图并列</option>
+                  <option value="all">全部图表</option>
+                  <option value="intl">仅国际现货金</option>
+                  <option value="domestic">仅国内积存金</option>
+                  <option value="dual-axis">同图双轴对比</option>
+                </select>
+              </div>
+              <div class="control-item">
+                <label>周期</label>
+                <select id="timeframe-select">
+                  <option value="1d" selected>日线</option>
+                  <option value="1h">小时线</option>
+                </select>
+              </div>
+              <div class="control-item control-zoom">
+                <label>K线缩放</label>
+                <div class="zoom-actions">
+                  <button id="btn-zoom-in" class="secondary-btn" type="button">放大</button>
+                  <button id="btn-zoom-out" class="secondary-btn" type="button">缩小</button>
+                  <button id="btn-zoom-reset" class="secondary-btn" type="button">重置</button>
+                </div>
+              </div>
+            </section>
+            <article class="monitor-status-card glass">
+              <h3>监控状态</h3>
+              
+              <div class="monitor-status-chip-row">
+                <span id="refresh-status" class="chip">自动刷新待启动</span>
+              </div>
+              <div class="monitor-status-actions">
+                <button id="btn-refresh-now" class="secondary-btn" type="button">立即刷新行情</button>
+                <button id="btn-insight-trigger" class="secondary-btn" type="button">开始AI分析</button>
+              </div>
+              
+              <div class="meta refresh-hint">可手动触发当前标的分析。</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="dashboard-section" id="dashboard-charts">
+          <div class="dashboard-section-head">
+            <h2>图表区</h2>
+            
+          </div>
+          <section class="chart-panel glass" id="split-wrapper">
+            <div class="chart-head">
+              <h2>分图模式</h2>
+              
+            </div>
+            <div class="chart-grid">
+              <div id="split-box-intl" class="chart-box">
+                <h4>国际现货金日K</h4>
+                <div class="chart-ma-bar"><span class="ma-tag" data-ma="5" id="ma-intl-5">MA5: --</span><span class="ma-tag" data-ma="20" id="ma-intl-20">MA20: --</span><span class="ma-tag" data-ma="60" id="ma-intl-60">MA60: --</span></div>
+                <div id="chart-intl" class="chart"></div>
+                <p id="chart-intl-time-range" class="chart-time-range">时间范围：--</p>
+              </div>
+              <div id="split-box-domestic" class="chart-box">
+                <h4>国内积存金日K</h4>
+                <div class="chart-ma-bar"><span class="ma-tag" data-ma="5" id="ma-dom-5">MA5: --</span><span class="ma-tag" data-ma="20" id="ma-dom-20">MA20: --</span><span class="ma-tag" data-ma="60" id="ma-dom-60">MA60: --</span></div>
+                <div id="chart-domestic" class="chart"></div>
+                <p id="chart-dom-time-range" class="chart-time-range">时间范围：--</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="chart-panel glass hidden" id="dual-wrapper">
+            <div class="chart-head">
+              <h2>同图双轴模式</h2>
+              
+            </div>
+            <div class="chart-ma-bar"><span class="ma-tag" data-ma="5" id="ma-dual-5">MA5: --</span><span class="ma-tag" data-ma="20" id="ma-dual-20">MA20: --</span><span class="ma-tag" data-ma="60" id="ma-dual-60">MA60: --</span></div>
+            <div id="chart-dual" class="chart"></div>
+            <p id="chart-dual-time-range" class="chart-time-range">时间范围：--</p>
+          </section>
+        </section>
+
+        <section class="dashboard-section" id="dashboard-history">
+          <section class="rules-panel glass">
+            <div class="chart-head">
+              <h2>历史数据表</h2>
+              
+            </div>
+            <div class="rule-item-actions kline-table-switch">
+              <label for="kline-table-view" class="meta">表格展示</label>
+              <select id="kline-table-view" aria-label="K线表格展示模式">
+                <option value="all" selected>全部</option>
+                <option value="intl">仅国际现货金</option>
+                <option value="domestic">仅国内积存金</option>
+              </select>
+            </div>
+            <div class="chart-grid kline-table-grid">
+              <div id="kline-table-intl-wrap" class="chart-box">
+                <h4>国际现货金日K（最近20条）</h4>
+                <div class="table-scroll">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>时间</th>
+                        <th>开</th>
+                        <th>高</th>
+                        <th>低</th>
+                        <th>收</th>
+                      </tr>
+                    </thead>
+                    <tbody id="kline-table-intl-body">
+                      <tr>
+                        <td colspan="5" class="meta">等待加载K线数据...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div id="kline-table-dom-wrap" class="chart-box">
+                <h4>国内积存金日K（最近20条）</h4>
+                <div class="table-scroll">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>时间</th>
+                        <th>开</th>
+                        <th>高</th>
+                        <th>低</th>
+                        <th>收</th>
+                      </tr>
+                    </thead>
+                    <tbody id="kline-table-dom-body">
+                      <tr>
+                        <td colspan="5" class="meta">等待加载K线数据...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="dashboard-section" id="dashboard-ai-linkage">
+          <section class="rules-panel glass">
+            <div class="chart-head">
+              <h2>AI事件联动</h2>
+              
+            </div>
+            <div id="dashboard-insight-tip" class="meta form-tip">等待加载 AI 事件...</div>
+            <div id="dashboard-overlay-container"></div>
+            <div id="dashboard-insight-detail" class="insight-detail-card">
+              <div class="insight-detail-empty">选择图表事件后查看详情。</div>
+            </div>
+          </section>
+        </section>
+      </section>
+
+      <section class="tab-panel hidden" data-tab-panel="rules">
+        <section class="rules-panel glass">
+          <div class="chart-head">
+            <h2>阈值规则</h2>
+            
+          </div>
+
+          <form
+            id="rule-form"
+            class="rule-form modal-form"
+            data-ui-modal="true"
+            data-modal-title="新建阈值规则"
+            data-modal-desc="设置触发条件。"
+            data-modal-trigger-label="新建规则"
+            data-modal-tip-id="rule-form-tip"
+          >
+            <section class="modal-section">
+              <header class="modal-section-head">
+                <h4>触发条件</h4>
+              </header>
+                <label class="field-box">
+                  <span>监控标的</span>
+                  <select id="rule-symbol" aria-label="监控标的">
+                    <option value="XAUUSD">国际现货金（XAUUSD）</option>
+                    <option value="AUCN">国内积存金（AUCN，自动优先浙商→民生）</option>
+                  </select>
+                </label>
+                <label class="field-box">
+                  <span>阈值方向</span>
+                  <select id="rule-condition" aria-label="阈值条件">
+                    <option value="gte">>=（突破）</option>
+                    <option value="lte"><=（跌破）</option>
+                  </select>
+                </label>
+                <label class="field-box">
+                  <span>触发阈值</span>
+                  <input id="rule-threshold" type="number" step="0.01" placeholder="阈值（两位小数）" aria-label="阈值价格" required />
+                </label>
+                <div class="field-box">
+                  <span>快捷填值</span>
+                  <div class="field-inline-actions">
+                    <button type="button" id="rule-fill-above" class="secondary-btn">按现价+1%</button>
+                    <button type="button" id="rule-fill-below" class="secondary-btn">按现价-1%</button>
+                  </div>
+                </div>
+                <label class="field-box full">
+                  <span>组合逻辑</span>
+                  <select id="rule-logic" aria-label="组合逻辑">
+                    <option value="and">AND：全部条件满足才触发</option>
+                    <option value="or">OR：任一条件满足即触发</option>
+                  </select>
+                </label>
+            </section>
+
+            <details class="modal-accordion">
+              <summary>
+                <span>高级过滤（可选）</span>
+              </summary>
+              <div class="modal-grid cols-2">
+                <label class="field-box">
+                  <span>冷却秒数</span>
+                  <input id="rule-cooldown" type="number" min="1" value="900" placeholder="冷却秒" aria-label="冷却秒数" />
+                </label>
+                <label class="field-box">
+                  <span>防抖次数</span>
+                  <input id="rule-debounce" type="number" min="1" value="2" placeholder="防抖次数" aria-label="防抖次数" />
+                </label>
+                <label class="field-box">
+                  <span>指标偏向</span>
+                  <select id="rule-indicator-filter" aria-label="指标过滤">
+                    <option value="any">不过滤</option>
+                    <option value="bullish_only">仅多头</option>
+                    <option value="bearish_only">仅空头</option>
+                    <option value="neutral_only">仅震荡</option>
+                  </select>
+                </label>
+                <label class="field-box">
+                  <span>数据新鲜度</span>
+                  <select id="rule-freshness-status" aria-label="数据新鲜度过滤">
+                    <option value="any">不过滤</option>
+                    <option value="live">仅实时更新</option>
+                    <option value="delayed">仅非实时更新</option>
+                    <option value="cached">仅缓存兜底</option>
+                  </select>
+                </label>
+                <label class="field-box full">
+                  <span>最大数据年龄（秒）</span>
+                  <input id="rule-max-age" type="number" min="0" step="1" placeholder="最大数据年龄秒（可选）" aria-label="最大数据年龄秒" />
+                </label>
+              </div>
+            </details>
+
+            <div class="modal-footer">
+              <button type="submit">新增规则</button>
+            </div>
+          </form>
+          <div id="rule-form-tip" class="meta form-tip">可用现价 ±1% 快速填值。</div>
+
+          <div id="rule-list" class="rule-list"></div>
+        </section>
+
+        <section class="rules-panel glass">
+          <div class="chart-head">
+            <h2>最近告警事件</h2>
+            
+          </div>
+          <div id="alert-list" class="rule-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel hidden" data-tab-panel="lab">
+        <section class="rules-panel glass">
+          <div class="chart-head">
+            <h2>策略实验室（历史回测）</h2>
+            
+          </div>
+          <form
+            id="backtest-form"
+            class="rule-form settings-form modal-form"
+            data-ui-modal="true"
+            data-modal-title="运行单规则回测"
+            data-modal-desc="选择规则与区间。"
+            data-modal-trigger-label="运行单规则回测"
+            data-modal-tip-id="backtest-tip"
+            data-modal-size="wide"
+          >
+            <section class="modal-section">
+              <header class="modal-section-head">
+                <h4>回测参数</h4>
+              </header>
+                <label class="field-box">
+                  <span>规则</span>
+                  <select id="backtest-rule-id" aria-label="选择要回测的规则">
+                    <option value="">请选择要回测的规则</option>
+                  </select>
+                </label>
+                <label class="field-box">
+                  <span>回测区间</span>
+                  <select id="backtest-range" aria-label="回测区间">
+                    <option value="1m">一个月</option>
+                    <option value="3m">三个月</option>
+                    <option value="6m">六个月</option>
+                    <option value="12m" selected>一年</option>
+                  </select>
+                </label>
+            </section>
+            <div class="modal-footer">
+              <button id="backtest-run" type="submit">运行回测</button>
+            </div>
+          </form>
+          <div id="backtest-tip" class="meta form-tip">先选择规则。</div>
+
+          <div class="insight-detail-grid" id="backtest-summary">
+            <section class="insight-subcard">
+              <h4>触发统计</h4>
+              <p class="meta">等待回测结果...</p>
+            </section>
+          </div>
+
+          <div class="chart-grid lab-chart-grid">
+            <section class="chart-box">
+              <h4>资金曲线（策略 vs 买入持有基准）</h4>
+              <div id="backtest-equity-chart" class="chart chart-compact"></div>
+            </section>
+          </div>
+
+          <form
+            id="backtest-compare-form"
+            class="rule-form settings-form backtest-compare-form modal-form"
+            data-ui-modal="true"
+            data-modal-title="按规则分组对比"
+            data-modal-desc="对比多条规则。"
+            data-modal-trigger-label="规则分组对比"
+            data-modal-tip-id="backtest-compare-tip"
+            data-modal-size="wide"
+          >
+            <section class="modal-section">
+              <header class="modal-section-head">
+                <h4>分组回放</h4>
+              </header>
+                <label class="field-box">
+                  <span>对比区间</span>
+                  <select id="backtest-compare-range" aria-label="规则对比区间">
+                    <option value="1m">一个月</option>
+                    <option value="3m">三个月</option>
+                    <option value="6m">六个月</option>
+                    <option value="12m" selected>一年</option>
+                  </select>
+                </label>
+                <label class="field-box full">
+                  <span>规则列表（可多选）</span>
+                  <select id="backtest-compare-rule-ids" multiple size="6" aria-label="选择对比规则（可多选）"></select>
+                </label>
+            </section>
+            <div class="modal-footer">
+              <button id="backtest-compare-run" type="submit">开始分组对比</button>
+            </div>
+          </form>
+          <div id="backtest-compare-tip" class="meta form-tip">可多选，留空则全部。</div>
+          <div class="backtest-sort-actions">
+            <button type="button" class="secondary-btn mini-btn" data-backtest-sort-key="net_return_pct" data-backtest-sort-order="desc">净收益优先</button>
+            <button type="button" class="secondary-btn mini-btn" data-backtest-sort-key="alpha_return_pct" data-backtest-sort-order="desc">超额收益优先</button>
+            <button type="button" class="secondary-btn mini-btn" data-backtest-sort-key="max_drawdown_pct" data-backtest-sort-order="asc">稳健优先</button>
+            <button type="button" class="secondary-btn mini-btn" data-backtest-sort-key="triggered_count" data-backtest-sort-order="desc">触发次数优先</button>
+            <span id="backtest-compare-sort-status" class="meta">当前排序：净收益优先</span>
+          </div>
+
+          <div class="notify-preview">
+            <div class="meta">规则分组对比</div>
+            <div class="table-scroll">
+              <table class="data-table" id="backtest-compare-table">
+                <thead>
+                  <tr>
+                    <th>规则</th>
+                    <th>条件组合</th>
+                    <th>触发/恢复</th>
+                    <th>1D均值%</th>
+                    <th>5D均值%</th>
+                    <th>策略净收益%</th>
+                    <th>基准收益%</th>
+                    <th>超额收益%</th>
+                    <th>最大回撤%</th>
+                    <th>最大不利%</th>
+                  </tr>
+                </thead>
+                <tbody id="backtest-compare-body">
+                  <tr>
+                    <td colspan="10" class="meta">暂无对比结果</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="notify-preview">
+            <div class="meta">逐笔明细</div>
+            <div class="table-scroll">
+              <table class="data-table" id="backtest-trades-table">
+                <thead>
+                  <tr>
+                    <th>触发时间</th>
+                    <th>方向</th>
+                    <th>触发价</th>
+                    <th>恢复时间</th>
+                    <th>1D收益%</th>
+                    <th>5D收益%</th>
+                    <th>最大不利%</th>
+                  </tr>
+                </thead>
+                <tbody id="backtest-trades-body">
+                  <tr>
+                    <td colspan="7" class="meta">暂无回测数据</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="tab-panel hidden" data-tab-panel="yfinance">
+        <section class="rules-panel glass">
+          <div class="chart-head">
+            <h2>YFinance 行情看板</h2>
+            
+          </div>
+
+          <form id="yfinance-form" class="rule-form settings-form">
+            <label>
+              Ticker
+              <input id="yfinance-ticker" type="text" value="AAPL" placeholder="例如 AAPL / MSFT / NVDA / GC=F" />
+            </label>
+            <label>
+              周期
+              <select id="yfinance-period">
+                <option value="1mo">一个月</option>
+                <option value="3mo">三个月</option>
+                <option value="6mo" selected>六个月</option>
+                <option value="1y">一年</option>
+                <option value="max">全部</option>
+              </select>
+            </label>
+            <label>
+              粒度
+              <select id="yfinance-interval">
+                <option value="1d" selected>日线</option>
+                <option value="1h">小时线</option>
+                <option value="30m">30分钟</option>
+                <option value="15m">15分钟</option>
+              </select>
+            </label>
+            <label>
+              盘前盘后
+              <select id="yfinance-prepost">
+                <option value="false" selected>关闭</option>
+                <option value="true">开启</option>
+              </select>
+            </label>
+            <button id="yfinance-load" type="submit">加载行情</button>
+          </form>
+          <div id="yfinance-tip" class="meta form-tip">输入代码后加载。</div>
+
+          <section class="cards-grid yfinance-summary-grid">
+            <article class="card glass">
+              <h3>最新价</h3>
+              <p class="price" id="yfinance-price">--</p>
+              <p class="meta" id="yfinance-asof">--</p>
+            </article>
+            <article class="card glass">
+              <h3>涨跌幅</h3>
+              <p class="price" id="yfinance-change-pct">--</p>
+              <p class="meta" id="yfinance-change-abs">--</p>
+            </article>
+            <article class="card glass">
+              <h3>日内区间</h3>
+              <p class="price" id="yfinance-day-range">--</p>
+              <p class="meta" id="yfinance-currency">--</p>
+            </article>
+            <article class="card glass">
+              <h3>成交量</h3>
+              <p class="price" id="yfinance-volume">--</p>
+              <p class="meta" id="yfinance-exchange">--</p>
+            </article>
+          </section>
+
+          <section class="chart-panel">
+            <div class="chart-head">
+              <h2 id="yfinance-chart-title">价格走势</h2>
+              <p id="yfinance-chart-meta">等待加载行情...</p>
+            </div>
+            <div id="chart-yfinance" class="chart"></div>
+          </section>
+
+          <div class="notify-preview">
+            <div class="meta">最近 K 线（最多 30 条）</div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>时间</th>
+                    <th>开</th>
+                    <th>高</th>
+                    <th>低</th>
+                    <th>收</th>
+                    <th>量</th>
+                  </tr>
+                </thead>
+                <tbody id="yfinance-bars-body">
+                  <tr>
+                    <td colspan="6" class="meta">等待加载行情...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="notify-preview">
+            <div class="meta">相关新闻（Yahoo Finance）</div>
+            <ul id="yfinance-news-list" class="yfinance-news-list">
+              <li class="meta">等待加载新闻...</li>
+            </ul>
+          </div>
+        </section>
+      </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="/static/js/echarts.min.js?v=3"></script>
+    <script>window.__PAGE="market";</script>
+    <script src="/static/js/sidebar.js?v=1781703001"></script>
+    <script>
+      if (window.GMSidebar) {
+        GMSidebar.renderSidebar({ activeTab: "dashboard" });
+        GMSidebar.renderModals();
+        GMSidebar.initSidebarToggle();
+        GMSidebar.loadSidebarUser();
+      }
+    </script>
+    <script src="/static/js/core.js?v=10"></script>
+    <script src="/static/js/market.js?v=16"></script>
+    <script src="/static/js/ai.js?v=8"></script>
+    <script src="/static/js/system.js?v=7"></script>
+    <script src="/static/js/init.js?v=8"></script>
+
+
+
+</body>
+</html>

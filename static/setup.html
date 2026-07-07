@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>初始化管理员 - 金价监控台</title>
+    <style>
+      :root {
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --text: #111317;
+        --muted: #6a717d;
+        --line: #e5e8ee;
+        --accent: #0a84ff;
+        --danger: #d12f3f;
+        --success: #127a4b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+        background:
+          radial-gradient(900px 500px at 20% -10%, #ffffff 0%, transparent 70%),
+          radial-gradient(900px 500px at 120% 20%, #ebf2ff 0%, transparent 68%),
+          var(--bg);
+      }
+      .card {
+        width: min(92vw, 430px);
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: 0 18px 48px rgba(17, 19, 23, 0.1);
+        padding: 22px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .form {
+        margin-top: 16px;
+        display: grid;
+        gap: 10px;
+      }
+      input,
+      button {
+        width: 100%;
+        border-radius: 12px;
+        font-size: 14px;
+        padding: 10px 12px;
+      }
+      input {
+        border: 1px solid var(--line);
+      }
+      button {
+        border: 0;
+        color: #fff;
+        background: var(--accent);
+        cursor: pointer;
+      }
+      .tip {
+        margin-top: 8px;
+        min-height: 18px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .tip.error {
+        color: var(--danger);
+      }
+      .tip.success {
+        color: var(--success);
+      }
+      .hidden {
+        display: none !important;
+      }
+      .inline {
+        display: flex;
+        gap: 8px;
+      }
+      .inline input {
+        flex: 1;
+      }
+      .inline button {
+        width: auto;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>初始化管理员账号</h1>
+      <p>首次使用需要先创建管理员账号。</p>
+      <form id="setup-form" class="form">
+        <input id="email" autocomplete="email" placeholder="管理员邮箱（将作为登录账号）" required />
+        <div id="verify-section" class="inline hidden">
+          <input id="verification-code" placeholder="邮箱验证码（6位）" />
+          <button id="btn-send-code" type="button">发送验证码</button>
+        </div>
+        <input id="password" type="password" autocomplete="new-password" placeholder="管理员密码" required />
+        <input id="session-secret" placeholder="重置密钥（留空自动生成）" />
+        <p class="tip-hint" style="font-size:12px;color:var(--muted);margin-top:4px">请保存此密钥，忘记密码时在找回页使用。</p>
+        <button type="submit">创建管理员</button>
+      </form>
+      <div id="tip" class="tip"></div>
+    </div>
+
+    <script>
+      const form = document.getElementById("setup-form");
+      const tip = document.getElementById("tip");
+      const btnSendCode = document.getElementById("btn-send-code");
+      const verifySection = document.getElementById("verify-section");
+      const codeInput = document.getElementById("verification-code");
+      const state = {
+        emailVerificationEnabled: false,
+        resendIntervalSec: 60,
+        sendLockedUntil: 0,
+      };
+      let sendTimer = null;
+
+      function setTip(text, kind = "normal") {
+        tip.textContent = text;
+        if (kind === "error") {
+          tip.className = "tip error";
+          return;
+        }
+        if (kind === "success") {
+          tip.className = "tip success";
+          return;
+        }
+        tip.className = "tip";
+      }
+
+      function updateSendCodeButtonState() {
+        if (!btnSendCode) return;
+        const remain = Math.max(0, Math.ceil(state.sendLockedUntil - Date.now() / 1000));
+        if (remain > 0) {
+          btnSendCode.disabled = true;
+          btnSendCode.textContent = `重发(${remain}s)`;
+        } else {
+          btnSendCode.disabled = false;
+          btnSendCode.textContent = "发送验证码";
+        }
+      }
+
+      function syncVerificationUI() {
+        if (state.emailVerificationEnabled) {
+          verifySection.classList.remove("hidden");
+          codeInput.required = true;
+          setTip("请输入邮箱并发送验证码，验证码通过后才可创建管理员。");
+        } else {
+          verifySection.classList.add("hidden");
+          codeInput.required = false;
+          setTip("未配置 SMTP，直接填写邮箱和密码即可创建管理员。");
+        }
+      }
+
+      async function checkBootstrapStatus() {
+        try {
+          const res = await fetch("/api/auth/bootstrap/status", { credentials: "include" });
+          if (!res.ok) return;
+          const payload = await res.json();
+          if (!payload.bootstrap_required) {
+            window.location.replace("/login");
+            return;
+          }
+          state.emailVerificationEnabled = Boolean(payload.email_verification_enabled);
+          state.resendIntervalSec = Math.max(15, Number(payload.resend_interval_sec) || 60);
+          syncVerificationUI();
+        } catch (_err) {}
+      }
+
+      async function sendCode() {
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        if (!email) {
+          setTip("请先输入邮箱。", "error");
+          return;
+        }
+        setTip("验证码发送中...");
+        try {
+          const res = await fetch("/api/auth/bootstrap/send_code", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          let payload = {};
+          try {
+            payload = await res.json();
+          } catch (_err) {}
+          if (!res.ok) {
+            if (res.status === 429 && payload?.retry_after_sec) {
+              state.sendLockedUntil = Date.now() / 1000 + Number(payload.retry_after_sec);
+              updateSendCodeButtonState();
+              setTip(`请求过快，请 ${payload.retry_after_sec}s 后重试。`, "error");
+              return;
+            }
+            setTip(payload?.error || "验证码发送失败。", "error");
+            return;
+          }
+          state.sendLockedUntil = Date.now() / 1000 + state.resendIntervalSec;
+          updateSendCodeButtonState();
+          setTip("验证码已发送，请检查邮箱。");
+          codeInput.focus();
+        } catch (_err) {
+          setTip("网络异常，稍后重试。", "error");
+        }
+      }
+
+      btnSendCode.addEventListener("click", sendCode);
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const password = document.getElementById("password").value;
+        const verificationCode = document.getElementById("verification-code").value.trim();
+        const sessionSecret = document.getElementById("session-secret").value.trim();
+        if (!email || !password) {
+          setTip("请输入邮箱和密码。", "error");
+          return;
+        }
+        if (state.emailVerificationEnabled && !verificationCode) {
+          setTip("请先输入邮箱验证码。", "error");
+          return;
+        }
+        setTip("初始化中...");
+        try {
+          const res = await fetch("/api/auth/bootstrap/init", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: email,
+              email,
+              password,
+              verification_code: verificationCode,
+              session_secret: sessionSecret,
+            }),
+          });
+          let payload = {};
+          try {
+            payload = await res.json();
+          } catch (_err) {}
+          if (!res.ok) {
+            if (res.status === 409) {
+              window.location.replace("/login");
+              return;
+            }
+            setTip(payload?.error || "初始化失败，请稍后重试。", "error");
+            return;
+          }
+          setTip("初始化成功，正在跳转登录页...", "success");
+          window.setTimeout(() => {
+            window.location.replace("/login");
+          }, 350);
+        } catch (_err) {
+          setTip("网络异常，稍后重试。", "error");
+        }
+      });
+
+      updateSendCodeButtonState();
+      sendTimer = window.setInterval(updateSendCodeButtonState, 1000);
+      checkBootstrapStatus();
+    </script>
+  </body>
+</html>

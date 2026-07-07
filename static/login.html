@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录 - 金价监控台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg-base: #070910;
+        --bg-surface: #0D1117;
+        --bg-elevated: #151C28;
+        --gold: #D4A843;
+        --gold-dim: rgba(212,168,67,0.10);
+        --gold-glow: rgba(212,168,67,0.20);
+        --accent: #4B8BF5;
+        --text: #E8ECF4;
+        --text-secondary: #8896B0;
+        --text-tertiary: #5A6680;
+        --line: rgba(136,150,176,0.07);
+        --line-strong: rgba(136,150,176,0.14);
+        --line-gold: rgba(212,168,67,0.15);
+        --glass-border: rgba(212,168,67,0.08);
+        --glass-border-strong: rgba(212,168,67,0.18);
+        --glass-highlight: rgba(212,168,67,0.03);
+        --negative: #F87171;
+        --positive: #34D399;
+        --radius-md: 12px;
+        --radius-xl: 20px;
+        --shadow-md: 0 4px 20px rgba(0,0,0,0.45);
+        --shadow-lg: 0 16px 48px rgba(0,0,0,0.55);
+        --font-display: 'Cormorant Garamond','Georgia',serif;
+        --font-sans: 'Fira Sans','PingFang SC','Hiragino Sans GB','Noto Sans CJK SC','Microsoft YaHei',sans-serif;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 14px; -webkit-font-smoothing: antialiased; }
+      body {
+        min-height: 100vh; display: grid; place-items: center;
+        font-family: var(--font-sans); color: var(--text);
+        background: var(--bg-base);
+        background-image:
+          radial-gradient(ellipse 80% 60% at 10% 0%, rgba(212,168,67,0.04) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 50% at 100% 100%, rgba(75,139,245,0.03) 0%, transparent 50%);
+      }
+
+      .card {
+        width: min(92vw, 400px);
+        background: var(--bg-surface);
+        border: 1px solid var(--glass-border-strong);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        padding: 32px 28px;
+        position: relative; overflow: hidden;
+      }
+      .card::before {
+        content: ''; position: absolute; inset: 0; pointer-events: none;
+        background: linear-gradient(165deg, var(--glass-highlight) 0%, transparent 40%);
+        border-radius: inherit;
+      }
+      .card > * { position: relative; z-index: 1; }
+
+      .brand {
+        display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+      }
+      .brand-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        background: var(--gold);
+        box-shadow: 0 0 10px var(--gold-glow), 0 0 24px rgba(212,168,67,0.12);
+        flex-shrink: 0;
+      }
+      .brand h1 {
+        font-family: var(--font-display); font-size: 22px;
+        font-weight: 600; letter-spacing: -0.01em; color: var(--text);
+      }
+      .subtitle {
+        color: var(--text-tertiary); font-size: 12px;
+        margin-bottom: 24px; line-height: 1.5;
+      }
+
+      .form { display: grid; gap: 12px; }
+      label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+      input {
+        width: 100%; padding: 10px 14px;
+        border: 1px solid var(--line-strong); border-radius: var(--radius-md);
+        background: var(--bg-elevated); color: var(--text);
+        font-size: 14px; font-family: var(--font-sans);
+        outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      input::placeholder { color: var(--text-tertiary); }
+      input:focus {
+        border-color: rgba(212,168,67,0.30);
+        box-shadow: 0 0 0 3px rgba(212,168,67,0.08);
+      }
+      .field { display: flex; flex-direction: column; }
+
+      .submit-btn {
+        width: 100%; padding: 11px 16px; margin-top: 4px;
+        border: none; border-radius: var(--radius-md);
+        background: linear-gradient(135deg, var(--gold), #C09530);
+        color: #0D1117; font-size: 14px; font-weight: 600;
+        font-family: var(--font-sans); cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(212,168,67,0.20);
+      }
+      .submit-btn:hover {
+        box-shadow: 0 4px 16px rgba(212,168,67,0.30);
+        filter: brightness(1.08);
+      }
+      .submit-btn:active { transform: scale(0.98); }
+      .secondary-btn {
+        width: 100%; padding: 11px 16px;
+        border: 1px solid var(--line-strong); border-radius: var(--radius-md);
+        background: var(--bg-elevated); color: var(--text);
+        font-size: 14px; font-weight: 500;
+        font-family: var(--font-sans); cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+        transition: all 0.2s ease;
+      }
+      .secondary-btn:hover {
+        border-color: var(--line-gold); color: var(--gold);
+        background: rgba(212,168,67,0.06);
+      }
+
+      .tip {
+        min-height: 18px; font-size: 12px; margin-top: 4px;
+        color: var(--text-tertiary); transition: color 0.2s ease;
+      }
+      .tip.error { color: var(--negative); }
+      .tip.success { color: var(--positive); }
+
+      .auth-actions {
+        display: grid; gap: 12px; margin-top: 18px;
+        padding-top: 18px; border-top: 1px solid var(--line);
+      }
+      .auth-actions-title {
+        font-size: 13px; font-weight: 600; color: var(--text);
+        text-align: center;
+      }
+      .auth-actions-copy {
+        font-size: 12px; color: var(--text-secondary); line-height: 1.5;
+        text-align: center;
+      }
+      .auth-actions-grid {
+        display: grid; gap: 10px;
+      }
+      .auth-inline-link {
+        color: var(--text-secondary); font-size: 12px; text-decoration: none;
+        text-align: center; transition: color 0.2s ease;
+      }
+      .auth-inline-link:hover { color: var(--gold); }
+      .hidden { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <h1>金价监控台</h1>
+      </div>
+      <form id="login-form" class="form">
+        <div class="field">
+          <label for="username">邮箱或用户名</label>
+          <input id="username" autocomplete="username" placeholder="输入邮箱或用户名" required />
+        </div>
+        <div class="field">
+          <label for="password">密码</label>
+          <input id="password" type="password" autocomplete="current-password" placeholder="输入密码" required />
+        </div>
+        <button type="submit" class="submit-btn">登录</button>
+      </form>
+      <div id="tip" class="tip"></div>
+      <div class="auth-actions">
+        <div class="auth-actions-title">首次使用？先完成账号注册</div>
+        <div class="auth-actions-copy">没有账号时，先注册并完成邮箱验证，再返回这里登录。</div>
+        <div class="auth-actions-grid">
+          <a href="/register" class="secondary-btn">注册新账号</a>
+          <a href="/forgot-password" class="secondary-btn">重置或找回密码</a>
+        </div>
+        <a href="/setup" id="bootstrap-link" class="auth-inline-link">还未初始化系统？前往初始化</a>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("login-form");
+      const tip = document.getElementById("tip");
+
+      async function checkStatus() {
+        try {
+          var qs = new URLSearchParams(window.location.search);
+          if (qs.get("reason") === "expired") return;
+          const res = await fetch("/api/auth/status", { credentials: "include" });
+          if (!res.ok) return;
+          const payload = await res.json();
+          if (payload.bootstrap_required) { window.location.replace("/setup"); return; }
+          const _bl = document.getElementById("bootstrap-link");
+          if (_bl) _bl.classList.add("hidden");
+          if (payload.authenticated) { window.location.replace("/market"); }
+        } catch (_) {}
+      }
+
+      function setTip(text, cls) {
+        tip.textContent = text;
+        tip.className = "tip" + (cls ? " " + cls : "");
+      }
+
+      function formatRetryAfter(seconds) {
+        const sec = Math.max(1, Number(seconds) || 1);
+        if (sec >= 60) { const m = Math.floor(sec/60), r = sec%60; return r > 0 ? m+"分"+r+"秒" : m+"分钟"; }
+        return sec + "秒";
+      }
+
+      function maybeShowQueryMessage() {
+        const params = new URLSearchParams(window.location.search);
+        const prefilledUser = params.get("user");
+        if (prefilledUser) { const el = document.getElementById("username"); if (el && !el.value.trim()) el.value = prefilledUser; }
+        if (params.get("registered") === "1") { setTip("注册成功，请使用新账号登录。", "success"); return; }
+        if (params.get("reset") === "1") { setTip(prefilledUser ? "密码已重置（账号："+prefilledUser+"），请使用新密码登录。" : "密码重置成功，请使用新密码登录。", "success"); return; }
+        if (params.get("reason") === "expired") { setTip("登录状态已过期，请重新登录。", "error"); }
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        if (!username || !password) { setTip("请输入用户名和密码。", "error"); return; }
+        setTip("登录中...");
+        try {
+          const res = await fetch("/api/auth/login", {
+            method: "POST", credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+          if (!res.ok) {
+            let payload = null;
+            try { payload = await res.json(); } catch (_) {}
+            if (res.status === 429 && payload?.retry_after_sec) { setTip("尝试次数过多，请 "+formatRetryAfter(payload.retry_after_sec)+" 后重试。", "error"); return; }
+            setTip("登录失败，请检查用户名或密码。", "error");
+            return;
+          }
+          window.location.replace("/market");
+        } catch (_) {
+          setTip("网络异常，稍后重试。", "error");
+        }
+      });
+
+      maybeShowQueryMessage();
+      checkStatus();
+    </script>
+  </body>
+</html>

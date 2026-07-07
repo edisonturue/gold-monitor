@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>注册 - 金价监控台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+
+    <style>
+:root {
+        --bg-base: #070910;
+        --bg-surface: #0D1117;
+        --bg-elevated: #151C28;
+        --gold: #D4A843;
+        --gold-dim: rgba(212,168,67,0.10);
+        --gold-glow: rgba(212,168,67,0.20);
+        --accent: #4B8BF5;
+        --text: #E8ECF4;
+        --text-secondary: #8896B0;
+        --text-tertiary: #5A6680;
+        --line: rgba(136,150,176,0.07);
+        --line-strong: rgba(136,150,176,0.14);
+        --line-gold: rgba(212,168,67,0.15);
+        --glass-border: rgba(212,168,67,0.08);
+        --glass-border-strong: rgba(212,168,67,0.18);
+        --glass-highlight: rgba(212,168,67,0.03);
+        --negative: #F87171;
+        --positive: #34D399;
+        --radius-md: 12px;
+        --radius-xl: 20px;
+        --shadow-md: 0 4px 20px rgba(0,0,0,0.45);
+        --shadow-lg: 0 16px 48px rgba(0,0,0,0.55);
+        --font-display: 'Cormorant Garamond','Georgia',serif;
+        --font-sans: 'Fira Sans','PingFang SC','Hiragino Sans GB','Noto Sans CJK SC','Microsoft YaHei',sans-serif;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 14px; -webkit-font-smoothing: antialiased; }
+      body {
+        min-height: 100vh; display: grid; place-items: center;
+        font-family: var(--font-sans); color: var(--text);
+        background: var(--bg-base);
+        background-image:
+          radial-gradient(ellipse 80% 60% at 10% 0%, rgba(212,168,67,0.04) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 50% at 100% 100%, rgba(75,139,245,0.03) 0%, transparent 50%);
+      }
+
+      .card {
+        width: min(92vw, 400px);
+        background: var(--bg-surface);
+        border: 1px solid var(--glass-border-strong);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        padding: 32px 28px;
+        position: relative; overflow: hidden;
+      }
+      .card::before {
+        content: ''; position: absolute; inset: 0; pointer-events: none;
+        background: linear-gradient(165deg, var(--glass-highlight) 0%, transparent 40%);
+        border-radius: inherit;
+      }
+      .card > * { position: relative; z-index: 1; }
+
+      .brand {
+        display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+      }
+      .brand-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        background: var(--gold);
+        box-shadow: 0 0 10px var(--gold-glow), 0 0 24px rgba(212,168,67,0.12);
+        flex-shrink: 0;
+      }
+      .brand h1 {
+        font-family: var(--font-display); font-size: 22px;
+        font-weight: 600; letter-spacing: -0.01em; color: var(--text);
+      }
+      .subtitle {
+        color: var(--text-tertiary); font-size: 12px;
+        margin-bottom: 24px; line-height: 1.5;
+      }
+
+      .form { display: grid; gap: 12px; }
+      label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+      input {
+        width: 100%; padding: 10px 14px;
+        border: 1px solid var(--line-strong); border-radius: var(--radius-md);
+        background: var(--bg-elevated); color: var(--text);
+        font-size: 14px; font-family: var(--font-sans);
+        outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      input::placeholder { color: var(--text-tertiary); }
+      input:focus {
+        border-color: rgba(212,168,67,0.30);
+        box-shadow: 0 0 0 3px rgba(212,168,67,0.08);
+      }
+      .field { display: flex; flex-direction: column; }
+
+      .submit-btn {
+        width: 100%; padding: 11px 16px; margin-top: 4px;
+        border: none; border-radius: var(--radius-md);
+        background: linear-gradient(135deg, var(--gold), #C09530);
+        color: #0D1117; font-size: 14px; font-weight: 600;
+        font-family: var(--font-sans); cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(212,168,67,0.20);
+      }
+      .submit-btn:hover {
+        box-shadow: 0 4px 16px rgba(212,168,67,0.30);
+        filter: brightness(1.08);
+      }
+      .submit-btn:active { transform: scale(0.98); }
+
+      .tip {
+        min-height: 18px; font-size: 12px; margin-top: 4px;
+        color: var(--text-tertiary); transition: color 0.2s ease;
+      }
+      .tip.error { color: var(--negative); }
+      .tip.success { color: var(--positive); }
+
+      .footer {
+        margin-top: 16px; padding-top: 16px;
+        border-top: 1px solid var(--line);
+        display: flex; flex-direction: column; gap: 6px;
+      }
+      .footer-copy {
+        font-size: 12px; color: var(--text-tertiary); line-height: 1.5;
+      }
+      .footer a {
+        color: var(--text-secondary); font-size: 12px; text-decoration: none;
+        transition: color 0.2s ease;
+      }
+      .footer a:hover { color: var(--gold); }
+
+      .inline {
+        display: flex; gap: 8px;
+      }
+      .inline input { flex: 1; }
+      .inline button { width: auto; white-space: nowrap; }
+      .secondary-btn {
+        color: var(--text-secondary); border: 1px solid var(--line-strong);
+        background: var(--bg-elevated); font-weight: 500;
+        border-radius: var(--radius-md); padding: 10px 14px;
+        font-size: 14px; font-family: var(--font-sans); cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .secondary-btn:hover {
+        border-color: var(--line-gold); color: var(--gold);
+      }
+      .back-link {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: var(--text-tertiary); font-size: 12px;
+        text-decoration: none; margin-bottom: 12px;
+        transition: color 0.2s ease;
+      }
+      .back-link:hover { color: var(--gold); }
+      .back-link svg { width: 14px; height: 14px; }
+      .hidden { display: none !important; }
+      .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <h1>金价监控台</h1>
+      </div>
+      <a href="/login" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        返回登录
+      </a>
+      <h1>注册</h1>
+      <form id="register-form" class="form">
+        <input id="invite-code" placeholder="邀请码（选填）" maxlength="32" />
+        <input id="email" autocomplete="email" placeholder="邮箱（用于接收验证码）" required />
+        <div class="inline">
+          <input id="verification-code" placeholder="邮箱验证码（6位）" maxlength="6" required />
+          <button id="btn-send-code" type="button" class="secondary-btn">发送验证码</button>
+        </div>
+        <input id="username" placeholder="用户名（可选，留空=邮箱）" maxlength="64" />
+        <input id="password" type="password" autocomplete="new-password" placeholder="登录密码" maxlength="128" required />
+        <button type="submit" class="submit-btn">完成注册</button>
+      </form>
+      <div id="tip" class="tip"></div>
+      <div class="footer">
+        <a href="/login">去登录</a>
+        <a href="/forgot-password">找回密码</a>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("register-form");
+      const tip = document.getElementById("tip");
+      const btnSendCode = document.getElementById("btn-send-code");
+      const state = {
+        resendLockedUntil: 0,
+      };
+
+      function setTip(text, kind = "normal") {
+        tip.textContent = text;
+        if (kind === "error") {
+          tip.className = "tip error";
+          return;
+        }
+        if (kind === "success") {
+          tip.className = "tip success";
+          return;
+        }
+        tip.className = "tip";
+      }
+
+      function updateSendCodeButton() {
+        const remain = Math.max(0, Math.ceil(state.resendLockedUntil - Date.now() / 1000));
+        if (remain > 0) {
+          btnSendCode.disabled = true;
+          btnSendCode.textContent = `重发(${remain}s)`;
+          return;
+        }
+        btnSendCode.disabled = false;
+        btnSendCode.textContent = "发送验证码";
+      }
+
+      async function checkStatus() {
+        try {
+          const res = await fetch("/api/auth/status", { credentials: "include" });
+          if (!res.ok) return;
+          const payload = await res.json();
+          if (payload.bootstrap_required) {
+            window.location.replace("/setup");
+            return;
+          }
+          if (payload.authenticated) {
+            window.location.replace("/market#dashboard");
+          }
+        } catch (_err) {}
+      }
+
+      async function sendCode() {
+        const inviteCode = document.getElementById("invite-code").value.trim().toUpperCase();
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        if (!email) {
+          setTip("请先填写邮箱。", "error");
+          return;
+        }
+        setTip("验证码发送中...");
+        try {
+          const res = await fetch("/api/auth/register/send_code", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ invite_code: inviteCode, email }),
+          });
+          let payload = {};
+          try {
+            payload = await res.json();
+          } catch (_err) {}
+          if (!res.ok) {
+            if (res.status === 429 && payload?.retry_after_sec) {
+              state.resendLockedUntil = Date.now() / 1000 + Number(payload.retry_after_sec);
+              updateSendCodeButton();
+              setTip(`请求过快，请 ${payload.retry_after_sec}s 后重试。`, "error");
+              return;
+            }
+            setTip(payload?.error || "验证码发送失败。", "error");
+            return;
+          }
+          state.resendLockedUntil = Date.now() / 1000 + 60;
+          updateSendCodeButton();
+          setTip("验证码已发送，请查收邮箱。", "success");
+        } catch (_err) {
+          setTip("网络异常，稍后重试。", "error");
+        }
+      }
+
+      btnSendCode.addEventListener("click", sendCode);
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const inviteCode = document.getElementById("invite-code").value.trim().toUpperCase();
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const verificationCode = document.getElementById("verification-code").value.trim();
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+
+        if (!email || !verificationCode || !password) {
+          setTip("请完整填写必填信息。", "error");
+          return;
+        }
+
+        setTip("注册中...");
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              invite_code: inviteCode,
+              email,
+              verification_code: verificationCode,
+              username,
+              password,
+            }),
+          });
+          let payload = {};
+          try {
+            payload = await res.json();
+          } catch (_err) {}
+          if (!res.ok) {
+            setTip(payload?.error || "注册失败，请稍后重试。", "error");
+            return;
+          }
+          setTip("注册成功，正在跳转登录页...", "success");
+          window.setTimeout(() => {
+            window.location.replace("/login?registered=1");
+          }, 400);
+        } catch (_err) {
+          setTip("网络异常，稍后重试。", "error");
+        }
+      });
+
+      updateSendCodeButton();
+      window.setInterval(updateSendCodeButton, 1000);
+      checkStatus();
+    </script>
+  </body>
+</html>
