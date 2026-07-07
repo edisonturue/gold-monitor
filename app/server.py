@@ -950,8 +950,6 @@ class GoldRequestHandler(BaseHTTPRequestHandler):
 
         if path == "/static/styles.css":
             return self._send_file(self.context.static_dir / "styles.css", "text/css; charset=utf-8")
-        if path == "/static/app.js":
-            return self._send_file(self.context.static_dir / "app.js", "application/javascript; charset=utf-8")
         if path.startswith("/static/js/") and path.endswith(".js"):
             js_name = path[len("/static/js/"):]
             js_path = self.context.static_dir / "js" / js_name
