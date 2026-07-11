@@ -66,7 +66,7 @@ if core.exists():
 # Write 404.html fallback that redirects to index
 _404 = """<!doctype html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=./">
+<head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=/gold-monitor/">
 <title>金价监控台</title>
 <style>
 body{margin:0;padding:0;background:#070910;color:#E8ECF4;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh}
