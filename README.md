@@ -1,5 +1,7 @@
 # Gold Monitor
 
+[**在线体验 Demo**](https://edisonturue.github.io/gold-monitor/) — 无需部署，浏览器直接打开，展示完整前端交互界面。
+
 免费优先的金价监控工具，支持：
 
 - 国际/国内金价实时采集（默认 5 秒轮询）

@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # build-demo.sh — Build static demo for GitHub Pages
+# Default: use temp dir (no leftover in workspace). Pass a path to override.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="${1:-${ROOT}/_demo}"
+OUT="${1:-$(mktemp -d)}"
 echo "[build-demo] Output: ${OUT}"
 
+# Always start clean
 rm -rf "${OUT}"
 mkdir -p "${OUT}"
 
@@ -23,18 +25,13 @@ for f in "${OUT}"/index.html "${OUT}"/market.html "${OUT}"/ai.html "${OUT}"/syst
   sed -i '' 's|<script src="./js/core\.js|<script src="./mock/mock.js"></script>\n    <script src="./js/core.js|' "$f"
 done
 
-# 4. Patch sidebar.js: fix navigation URLs for sub-path hosting
-#    At /gold-monitor/, absolute "/market.html" resolves to root (wrong).
-#    Use relative "market.html" (no leading /) instead.
+# 4. Patch sidebar.js: navigation URLs must be relative (no leading /)
 SIDEBAR="${OUT}/js/sidebar.js"
 if [ -f "$SIDEBAR" ]; then
-  # WORKSPACE_PAGE values  e.g. market: "/market" → market: "market.html"
   sed -i '' 's|"/market"|"market.html"|g' "$SIDEBAR"
   sed -i '' 's|"/ai"|"ai.html"|g' "$SIDEBAR"
   sed -i '' 's|"/system"|"system.html"|g' "$SIDEBAR"
-  # Login redirect
-  sed -i '' 's|location.replace("/login")|location.replace("index.html")|g' "$SIDEBAR"
-  # Logout link
+  sed -i '' 's|location\.replace("/login")|location.replace("index.html")|g' "$SIDEBAR"
   sed -i '' 's|href="/logout"|href="#" onclick="return false"|g' "$SIDEBAR"
 fi
 

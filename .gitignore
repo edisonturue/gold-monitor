@@ -81,3 +81,4 @@ static/test.html
 
 # GitHub workflows (managed via web UI)
 .github/
+_demo/
