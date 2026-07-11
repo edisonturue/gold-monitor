@@ -17,10 +17,13 @@ cp "${ROOT}/static/mock/mock.js" "${OUT}/mock/mock.js"
 # 2. Rewrite /static/ → ./ for HTML (GitHub Pages sub-path)
 find "${OUT}" -name "*.html" -exec sed -i '' 's|href="/static/|href="./|g; s|src="/static/|src="./|g' {} +
 
-# 3. Inject mock.js before core.js
+# 3. CRITICAL: Inject mock.js RIGHT AFTER echarts, BEFORE sidebar.js
+#    This fixes the auth redirect loop: loadSidebarUser() calls fetch("/api/settings")
+#    before mock.js patches window.fetch → 404 → redirect → infinite loop.
 for f in "${OUT}"/index.html "${OUT}"/market.html "${OUT}"/ai.html "${OUT}"/system.html; do
   test -f "$f" || continue
-  sed -i '' 's|<script src="./js/core\.js|<script src="./mock/mock.js"></script>\n    <script src="./js/core.js|' "$f"
+  # Insert mock.js after echarts.min.js, before sidebar.js
+  sed -i '' 's|<script src="./js/sidebar\.js|<script src="./mock/mock.js"></script>\n    <script src="./js/sidebar.js|' "$f"
 done
 
 # 4. Patch sidebar.js: navigation URLs must be relative (no leading /)
@@ -33,13 +36,11 @@ if [ -f "$SIDEBAR" ]; then
   sed -i '' 's|href="/logout"|href="#" onclick="return false"|g' "$SIDEBAR"
 fi
 
-# 5. Patch core.js: suppress auto-refresh in demo mode
-#    Replace scheduleAutoRefresh with a no-op when __DEMO_MODE__ is set.
+# 5. Patch core.js: suppress auth-expired redirect
 CORE="${OUT}/js/core.js"
 if [ -f "$CORE" ]; then
-  # Suppress login redirect
   sed -i '' 's|location.replace("/login?reason=expired")|console.warn("[Demo] No redirect")|g' "$CORE"
-  # Replace scheduleAutoRefresh body — no interval in demo mode
+  # Suppress auto-refresh timer
   sed -i '' 's|function scheduleAutoRefresh(sec) {|function scheduleAutoRefresh(sec) {\n  if (window.__DEMO_MODE__) { return; }|' "$CORE"
 fi
 
