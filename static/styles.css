@@ -316,7 +316,7 @@ body {
 .ma-tag[data-ma="5"] { color: #b89440; }
 .ma-tag[data-ma="20"] { color: #9a6aaa; }
 .ma-tag[data-ma="60"] { color: #3f8ab3; }
-.chart { width: 100%; height: 360px; }
+.chart { width: 100%; height: 360px; background: #0d1117; }
 .chart-compact { height: 280px; }
 
 /* ===== Dashboard ===== */

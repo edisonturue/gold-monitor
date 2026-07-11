@@ -18,8 +18,7 @@ if OUT.resolve() == _DEMO.resolve() and _DEMO.exists():
             else:
                 item.unlink()
 
-# Clean & copy
-if OUT.exists(): shutil.rmtree(OUT)
+# Copy static files into cleaned output (preserving .git)
 shutil.copytree(str(ROOT / "static"), str(OUT), dirs_exist_ok=True)
 (OUT / "mock").mkdir(exist_ok=True)
 shutil.copy(str(ROOT / "static/mock/mock.js"), str(OUT / "mock/mock.js"))
