@@ -17,34 +17,34 @@ cp "${ROOT}/static/mock/mock.js" "${OUT}/mock/mock.js"
 # 2. Rewrite /static/ → ./ for HTML (GitHub Pages sub-path)
 find "${OUT}" -name "*.html" -exec sed -i '' 's|href="/static/|href="./|g; s|src="/static/|src="./|g' {} +
 
-# 3. CRITICAL: Inject mock.js BEFORE sidebar.js.
-#    loadSidebarUser() calls fetch("/api/settings") on page load.
-#    If mock.js hasn't patched window.fetch yet → real HTTP 404 → redirect loop.
+# 3. Inject mock.js BEFORE sidebar.js
 for f in "${OUT}"/index.html "${OUT}"/market.html "${OUT}"/ai.html "${OUT}"/system.html; do
   test -f "$f" || continue
   sed -i '' 's|<script src="./js/sidebar\.js|<script src="./mock/mock.js"></script>\n    <script src="./js/sidebar.js|' "$f"
 done
 
-# 4. Patch sidebar.js
+# 4. NUKED: sidebar.js — every possible redirect turned into harmless warn()
 SIDEBAR="${OUT}/js/sidebar.js"
 if [ -f "$SIDEBAR" ]; then
-  # Navigation: relative URLs (no leading /)
+  # Navigation URLs: relative (no leading /)
   sed -i '' 's|"/market"|"market.html"|g' "$SIDEBAR"
   sed -i '' 's|"/ai"|"ai.html"|g' "$SIDEBAR"
   sed -i '' 's|"/system"|"system.html"|g' "$SIDEBAR"
-  # Login redirect → go to index instead
-  sed -i '' 's|location\.replace("/login")|location.replace("index.html")|g' "$SIDEBAR"
-  # Logout link
+  # location.replace("/login") → console.warn("/login")  (safe)
+  sed -i '' 's|window.location.replace(|window.console.warn(|g' "$SIDEBAR"
+  # Cross-page navigation → just hash (all tabs exist in index.html)
+  sed -i '' 's|window.location.href = targetPage + "#" + tabLink|window.location.hash = "#" + tabLink|' "$SIDEBAR"
+  # Logout → NOP
   sed -i '' 's|href="/logout"|href="#" onclick="return false"|g' "$SIDEBAR"
-  # SAFETY: suppress redirect in catch handler when mock fetch fails
-  sed -i '' 's|if (avatarEl.textContent === "?") {|if (window.__DEMO_MODE__) return;\n          if (avatarEl.textContent === "?") {|' "$SIDEBAR"
 fi
 
-# 5. Patch core.js
+# 5. NUKED: core.js
 CORE="${OUT}/js/core.js"
 if [ -f "$CORE" ]; then
-  sed -i '' 's|location.replace("/login?reason=expired")|console.warn("[Demo] No redirect")|g' "$CORE"
-  sed -i '' 's|function scheduleAutoRefresh(sec) {|function scheduleAutoRefresh(sec) {\n  if (window.__DEMO_MODE__) { return; }|' "$CORE"
+  # location.replace → console.warn (safe)
+  sed -i '' 's|window.location.replace(|window.console.warn(|g' "$CORE"
+  # Auto-refresh timer → return immediately
+  sed -i '' 's|function scheduleAutoRefresh(sec) {|function scheduleAutoRefresh(sec) { return; |' "$CORE"
 fi
 
 # 6. SPA fallback + remove auth pages
