@@ -63,23 +63,6 @@ if core.exists():
     content = content.replace('function scheduleAutoRefresh(sec) {', 'function scheduleAutoRefresh(sec) { return;')
     core.write_text(content)
 
-# Write 404.html fallback that redirects to index
-_404 = """<!doctype html>
-<html lang="zh-CN">
-<head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=/gold-monitor/">
-<title>金价监控台</title>
-<style>
-body{margin:0;padding:0;background:#070910;color:#E8ECF4;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh}
-.card{text-align:center}
-h1{font-size:72px;font-weight:700;margin:0;color:rgba(212,168,67,0.3);line-height:1}
-p{font-size:14px;color:#8896B0;margin:12px 0 24px}
-a{color:#D4A843;text-decoration:none;font-weight:500;font-size:13px}
-a:hover{text-decoration:underline}
-</style>
-</head>
-<body><div class="card"><h1>404</h1><p>正在跳转至首页...</p><a href="./">返回首页</a></div></body>
-</html>"""
-(OUT / "404.html").write_text(_404)
 
 # Bump cache-busting
 for html in OUT.rglob("*.html"):
@@ -87,14 +70,12 @@ for html in OUT.rglob("*.html"):
     content = re.sub(r'\?v=[0-9]+"', '?v=' + CACHE_BUST + '"', content)
     html.write_text(content)
 
-# SPA fallback via 404 already done above
 # Remove auth pages
 for f in ["login.html", "register.html", "setup.html", "forgot_password.html"]:
     p = OUT / f
     if p.exists(): p.unlink()
 
 # Verify patches
-print(f"[verify] 404.html: {(OUT / '404.html').exists()}")
 sb_ok = 'demo-noredirect' in (OUT / "js/sidebar.js").read_text() if (OUT / "js/sidebar.js").exists() else False
 co_ok = 'demo-noredirect' in (OUT / "js/core.js").read_text() if (OUT / "js/core.js").exists() else False
 print(f"[verify] sidebar.js patched: {sb_ok}")
