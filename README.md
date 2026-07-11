@@ -1,4 +1,4 @@
-[![在线体验 Demo](https://img.shields.io/badge/%E5%9C%A8%E7%BA%BF%E4%BD%93%E9%AA%8C-Demo-gold?style=for-the-badge&logo=github)](https://edisonturue.github.io/gold-monitor/)
+[![](https://img.shields.io/badge/%E5%9C%A8%E7%BA%BF%E4%BD%93%E9%AA%8C_Demo-gold?style=for-the-badge)](https://edisonturue.github.io/gold-monitor/)
 
 # Gold Monitor
 
