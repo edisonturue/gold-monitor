@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 # build-demo.sh — Build static demo for GitHub Pages
-# Default: use temp dir (no leftover in workspace). Pass a path to override.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${1:-$(mktemp -d)}"
 echo "[build-demo] Output: ${OUT}"
 
-# Always start clean
 rm -rf "${OUT}"
 mkdir -p "${OUT}"
 
@@ -35,10 +33,14 @@ if [ -f "$SIDEBAR" ]; then
   sed -i '' 's|href="/logout"|href="#" onclick="return false"|g' "$SIDEBAR"
 fi
 
-# 5. Patch core.js: suppress auth-expired redirect
+# 5. Patch core.js: suppress auto-refresh in demo mode
+#    Replace scheduleAutoRefresh with a no-op when __DEMO_MODE__ is set.
 CORE="${OUT}/js/core.js"
 if [ -f "$CORE" ]; then
+  # Suppress login redirect
   sed -i '' 's|location.replace("/login?reason=expired")|console.warn("[Demo] No redirect")|g' "$CORE"
+  # Replace scheduleAutoRefresh body — no interval in demo mode
+  sed -i '' 's|function scheduleAutoRefresh(sec) {|function scheduleAutoRefresh(sec) {\n  if (window.__DEMO_MODE__) { return; }|' "$CORE"
 fi
 
 # 6. SPA fallback + remove auth pages
