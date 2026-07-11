@@ -260,9 +260,7 @@ body {
   font-family: var(--font-mono); font-weight: 700;
   font-size: clamp(24px, 2.5vw, 36px);
   letter-spacing: -0.03em; line-height: 1.15;
-  background: linear-gradient(135deg, var(--text) 60%, var(--gold) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
 }
 .meta {
   font-size: var(--fs-sm); color: var(--text-tertiary);
@@ -1372,11 +1370,11 @@ form[data-ui-modal="true"]:not([data-ui-modal-mode="page"]) { display: none; }
 }
 .card[data-tier="primary"] .price {
   font-size: clamp(28px, 3vw, 42px);
-  background: linear-gradient(135deg, var(--text) 50%, var(--gold) 100%);
+  color: var(--text);
 }
 .card[data-tier="secondary"] .price {
   font-size: clamp(20px, 2vw, 30px);
-  background: linear-gradient(135deg, var(--text-secondary) 60%, var(--gold) 100%);
+  color: var(--text-secondary);
 }
 .card[data-tier="secondary"] h3 {
   color: var(--text-secondary);
