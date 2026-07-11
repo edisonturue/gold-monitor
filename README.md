@@ -1,3 +1,5 @@
+[![在线体验 Demo](https://img.shields.io/badge/%E5%9C%A8%E7%BA%BF%E4%BD%93%E9%AA%8C-Demo-gold?style=for-the-badge&logo=github)](https://edisonturue.github.io/gold-monitor/)
+
 # Gold Monitor
 
 [**在线体验 Demo**](https://edisonturue.github.io/gold-monitor/) — 无需部署，浏览器直接打开，展示完整前端交互界面。
