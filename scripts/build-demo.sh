@@ -17,30 +17,33 @@ cp "${ROOT}/static/mock/mock.js" "${OUT}/mock/mock.js"
 # 2. Rewrite /static/ → ./ for HTML (GitHub Pages sub-path)
 find "${OUT}" -name "*.html" -exec sed -i '' 's|href="/static/|href="./|g; s|src="/static/|src="./|g' {} +
 
-# 3. CRITICAL: Inject mock.js RIGHT AFTER echarts, BEFORE sidebar.js
-#    This fixes the auth redirect loop: loadSidebarUser() calls fetch("/api/settings")
-#    before mock.js patches window.fetch → 404 → redirect → infinite loop.
+# 3. CRITICAL: Inject mock.js BEFORE sidebar.js.
+#    loadSidebarUser() calls fetch("/api/settings") on page load.
+#    If mock.js hasn't patched window.fetch yet → real HTTP 404 → redirect loop.
 for f in "${OUT}"/index.html "${OUT}"/market.html "${OUT}"/ai.html "${OUT}"/system.html; do
   test -f "$f" || continue
-  # Insert mock.js after echarts.min.js, before sidebar.js
   sed -i '' 's|<script src="./js/sidebar\.js|<script src="./mock/mock.js"></script>\n    <script src="./js/sidebar.js|' "$f"
 done
 
-# 4. Patch sidebar.js: navigation URLs must be relative (no leading /)
+# 4. Patch sidebar.js
 SIDEBAR="${OUT}/js/sidebar.js"
 if [ -f "$SIDEBAR" ]; then
+  # Navigation: relative URLs (no leading /)
   sed -i '' 's|"/market"|"market.html"|g' "$SIDEBAR"
   sed -i '' 's|"/ai"|"ai.html"|g' "$SIDEBAR"
   sed -i '' 's|"/system"|"system.html"|g' "$SIDEBAR"
+  # Login redirect → go to index instead
   sed -i '' 's|location\.replace("/login")|location.replace("index.html")|g' "$SIDEBAR"
+  # Logout link
   sed -i '' 's|href="/logout"|href="#" onclick="return false"|g' "$SIDEBAR"
+  # SAFETY: suppress redirect in catch handler when mock fetch fails
+  sed -i '' 's|if (avatarEl.textContent === "?") {|if (window.__DEMO_MODE__) return;\n          if (avatarEl.textContent === "?") {|' "$SIDEBAR"
 fi
 
-# 5. Patch core.js: suppress auth-expired redirect
+# 5. Patch core.js
 CORE="${OUT}/js/core.js"
 if [ -f "$CORE" ]; then
   sed -i '' 's|location.replace("/login?reason=expired")|console.warn("[Demo] No redirect")|g' "$CORE"
-  # Suppress auto-refresh timer
   sed -i '' 's|function scheduleAutoRefresh(sec) {|function scheduleAutoRefresh(sec) {\n  if (window.__DEMO_MODE__) { return; }|' "$CORE"
 fi
 
